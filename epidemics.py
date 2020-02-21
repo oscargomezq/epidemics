@@ -80,6 +80,7 @@ def infect_iteration (x, y, h):
 	# Check nearest neighbors (height 0) separately
 
 def try_to_infect(x, y, h, compare_x, compare_y):
+	# Check if already infected, skip altogether
 	# Check if height of comp_x, comp_y is at least h
 	#
 	pass
