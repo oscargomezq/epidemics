@@ -157,24 +157,8 @@ for i in range(total_time_steps):
 		px, py = dec_to_bin(person[0],m), dec_to_bin(person[1],m)
 		infect_iteration (px, py, get_height(px, py))
 	print("--------------------------------------------------------------------------")
-	print("Infected at time step:", curr_iter-1)
+	# print("Infected at time step:", curr_iter-1)
 	print(infected_history[curr_iter-1])
 	print("Total infected so far:", len(total_infected))
 	print()
-	print_matrix (total_infected, 4**(int(m/2)))
-
-# x=37
-# y=255
-# xbin = dec_to_bin(x, m)
-# ybin = dec_to_bin(y, m)
-# print(xbin,ybin)
-# print(find_range(xbin, ybin, 3))
-
-
-# print(next_in_bin(xbin), next_in_bin(ybin))
-
-# x=0
-# y=0
-# xbin = dec_to_bin(x, m)
-# ybin = dec_to_bin(y, m)
-# infect_iteration(xbin,ybin,3)
+	print_matrix (total_infected, len_side)
