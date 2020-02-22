@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # level 0 = only the nearest 4 neighbors
 # level 1 = smallest group of 4
 # level m = all the population
-m = 6
+m = 8
 
 # Size of population
 N = 4**m
@@ -63,7 +63,7 @@ def prev_in_bin (b):
 def get_height (x, y):
 	x1 = bin_to_dec(x)
 	y1 = bin_to_dec(y)
-	idx = x1*(4**(m/2)) + y1
+	idx = x1*len_side + y1
 	np.random.seed(int(idx))
 	return np.random.geometric(p=alpha)%(m+1)
 
@@ -82,9 +82,7 @@ def dec_to_bin (x, digits):
 
 # Binary string to decimal int
 def bin_to_dec (b):
-	try:
-		return int(b,2)
-	except: print("ERROROOOOOOOOOOOROROROROROROROROROROROROROROROOROROROROR AAAAAAAAAHHHHH PANIC ", b)
+	return int(b,2)
 
 # Update the infected sets for x,y getting infected in the given iteration
 def update_infected (x, y, itr):
@@ -149,7 +147,7 @@ total_time_steps = 16
 g = plt.figure(figsize=(18, 18)) 
 
 curr_iter = 0
-init_idx = dec_to_bin( int( len_side/2 ), m)
+init_idx = dec_to_bin( int(len_side/2), m)
 initial_infected = (init_idx, init_idx)
 update_infected (initial_infected[0], initial_infected[1], curr_iter)
 
