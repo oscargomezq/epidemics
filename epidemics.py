@@ -6,13 +6,14 @@ import matplotlib.pyplot as plt
 # level 0 = only the nearest 4 neighbors
 # level 1 = smallest group of 4
 # level m = all the population
-m = 8
+m = 6
 
 # Size of population
 N = 4**m
 
 # Size of side of square
-len_side = 4**(int(m/2))
+len_side = int(4**(m/2))
+print(len_side)
 
 # Probability for geometric distribution
 alpha = 1/10
@@ -135,15 +136,17 @@ def infect_iteration (x, y, h):
 		if got_infected: update_infected (neigh[0], neigh[1], curr_iter)
 
 # Visualization
-def print_matrix (infected_set, side):
+def print_matrix (plt_fig, infected_set, side, itr):
 	aa = np.zeros((side,side))
 	for tup in infected_set:
 		aa[tup[0], tup[1]] = 1
-	plt.matshow(aa)
-	plt.show()
+	sp =  plt_fig.add_subplot(4, 4, itr+1)
+	plt.matshow(aa, fignum=False)
+	plt.tight_layout()
 
 # Main loop
-total_time_steps = 10
+total_time_steps = 16
+g = plt.figure(figsize=(18, 18)) 
 
 curr_iter = 0
 init_idx = dec_to_bin( int( len_side/2 ), m)
@@ -158,7 +161,9 @@ for i in range(total_time_steps):
 		infect_iteration (px, py, get_height(px, py))
 	print("--------------------------------------------------------------------------")
 	# print("Infected at time step:", curr_iter-1)
-	print(infected_history[curr_iter-1])
+	# print(infected_history[curr_iter-1])
 	print("Total infected so far:", len(total_infected))
 	print()
-	print_matrix (total_infected, len_side)
+	print_matrix (g, total_infected, len_side, i)
+
+plt.savefig("results/sim_for_m_"+ str(m) + "_a_" + str(alpha) + "_p_" + str(p) + "_r_" + str(rho) + ".png", format="png")
