@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 
 # Number of levels
 # level 0 = only the nearest 4 neighbors
 # level 1 = smallest group of 4
 # level m = all the population
-m = 8
+m = 5
 
 # Size of population
 N = 4**m
@@ -16,13 +17,13 @@ len_side = int(4**(m/2))
 print(len_side)
 
 # Probability for geometric distribution
-alpha = 1/10
+alpha = 1/4
 
 # Probability for nearest neighbors (h=0)
-p = 0.20
+p = 0.2
 
 # Decrease modulator for higher levels
-rho = 0.50
+rho = 0.5
 
 # List of sets of infected people (only includes the NEWLY infected people at each stage)
 # Stores tuples of ints, not strings
@@ -142,16 +143,26 @@ def print_matrix (plt_fig, infected_set, side, itr):
 	plt.matshow(aa, fignum=False)
 	plt.tight_layout()
 
+
+
 # Main loop
-total_time_steps = 16
+vis_steps = 1
+time_steps = 16
+
+# Visualization for the actual spreading
 g = plt.figure(figsize=(18, 18)) 
+
+# Parameters for scatterplots
+x = []
+y_total = []
+y_partial = []
 
 curr_iter = 0
 init_idx = dec_to_bin( int(len_side/2), m)
 initial_infected = (init_idx, init_idx)
 update_infected (initial_infected[0], initial_infected[1], curr_iter)
 
-for i in range(total_time_steps):
+for i in range(time_steps*vis_steps):
 	curr_iter += 1
 	infected_history.append(set({}))
 	for person in infected_history[curr_iter-1]:
@@ -162,6 +173,24 @@ for i in range(total_time_steps):
 	# print(infected_history[curr_iter-1])
 	print("Total infected so far:", len(total_infected))
 	print()
-	print_matrix (g, total_infected, len_side, i)
+	x.append(i)
+	y_total.append(len(total_infected))
+	y_partial.append(len(infected_history[curr_iter-1]))
+	if (curr_iter%vis_steps == 1):
+		print_matrix (g, total_infected, len_side, int(curr_iter/vis_steps))
+	elif (vis_steps==1): 
+		print_matrix (g, total_infected, len_side, i)
 
-plt.savefig("results/sim_for_m_"+ str(m) + "_a_" + str(alpha) + "_p_" + str(p) + "_r_" + str(rho) + ".png", format="png")
+time_stamp = str(int(datetime.now().timestamp())%100000)
+plt.savefig("results/sim_for_m_"+ str(m) + "_a_" + str(alpha) + "_p_" + str(p) + "_r_" + str(rho) + "_v_" + time_stamp + ".png", format="png")
+
+
+# Scatterplot with total and new infected
+# f = plt.figure(figsize=(18, 10))
+
+plt.clf()
+plt.figure(figsize=(8, 8))
+lines = plt.plot(x, y_total, x, y_partial)
+plt.legend(('Total infected', 'Newly infected'), loc='upper right')
+plt.title('Epidemic Spread')
+plt.savefig("results/scatter_for_m_"+ str(m) + "_a_" + str(alpha) + "_p_" + str(p) + "_r_" + str(rho) + "_v_" + time_stamp + ".png", format="png")
