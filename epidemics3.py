@@ -2,28 +2,41 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 
+# import sys
+# def sizeof_fmt(num, suffix='B'):
+#     ''' by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified'''
+#     for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+#         if abs(num) < 1024.0:
+#             return "%3.1f %s%s" % (num, unit, suffix)
+#         num /= 1024.0
+#     return "%.1f %s%s" % (num, 'Yi', suffix)
+
+# def print_sizes ():
+# 	for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()), key= lambda x: -x[1])[:10]:
+# 		print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
+
+
 
 # Number of levels
 # level 0 = only the nearest 4 neighbors
 # level 1 = smallest group of 4
 # level m = all the population
-m = 10
+m = 6
 
 # Size of population
 N = 4**m
 
 # Size of side of square
 len_side = int(4**(m/2))
-print(len_side)
 
 # Probability for geometric distribution
-alpha = 1/5
+alpha = 1/15
 
 # Probability for nearest neighbors (h=0)
 p = 0.5
 
 # Decrease modulator for higher levels
-rho = 0.25
+rho = 0.12
 
 # List of sets of infected people (only includes the NEWLY infected people at each stage)
 # Stores tuples of ints, not strings
@@ -31,6 +44,8 @@ infected_history = [set({})]
 
 # Set of everyone infected so far (union of the history sets)
 total_infected = set({})
+
+curr_iter = 0
 
 # Returns x+1 in base b
 def next_in_base (x, b):
@@ -143,54 +158,78 @@ def print_matrix (plt_fig, infected_set, side, itr):
 	plt.matshow(aa, fignum=False)
 	plt.tight_layout()
 
+# Run one iteration with all parameters
+def main_loop(alpha, p, rho):
 
-
-# Main loop
-vis_steps = 2
-time_steps = 16
-
-# Visualization for the actual spreading
-g = plt.figure(figsize=(18, 18)) 
-
-# Parameters for scatterplots
-x = []
-y_total = []
-y_partial = []
-
-curr_iter = 0
-init_idx = dec_to_bin( int(len_side/2), m)
-initial_infected = (init_idx, init_idx)
-update_infected (initial_infected[0], initial_infected[1], curr_iter)
-
-for i in range(time_steps*vis_steps):
-	curr_iter += 1
+	global infected_history, total_infected, curr_iter
+	infected_history.clear()
 	infected_history.append(set({}))
-	for person in infected_history[curr_iter-1]:
-		px, py = dec_to_bin(person[0],m), dec_to_bin(person[1],m)
-		infect_iteration (px, py, get_height(px, py))
-	print("--------------------------------------------------------------------------")
-	# print("Infected at time step:", curr_iter-1)
-	# print(infected_history[curr_iter-1])
-	print("Total infected so far:", len(total_infected))
-	print()
-	x.append(i)
-	y_total.append(len(total_infected))
-	y_partial.append(len(infected_history[curr_iter-1]))
-	if (curr_iter%vis_steps == 1):
-		print_matrix (g, total_infected, len_side, int(curr_iter/vis_steps))
-	elif (vis_steps==1): 
-		print_matrix (g, total_infected, len_side, i)
+	total_infected.clear()
 
-time_stamp = str(int(datetime.now().timestamp())%100000)
-plt.savefig("results/sim_for_m_"+ str(m) + "_a_" + str(alpha) + "_p_" + str(p) + "_r_" + str(rho) + "_v_" + time_stamp + ".png", format="png")
+	# Visualization for the actual spreading
+	g = plt.figure(figsize=(18, 18)) 
+
+	# Parameters for scatterplots
+	x = []
+	y_total = []
+	y_partial = []
+
+	curr_iter = 0
+	init_idx = dec_to_bin( int(len_side/2), m)
+	initial_infected = (init_idx, init_idx)
+	update_infected (initial_infected[0], initial_infected[1], curr_iter)
+
+	for i in range(time_steps*vis_steps):
+		curr_iter += 1
+		infected_history.append(set({}))
+		for person in infected_history[curr_iter-1]:
+			px, py = dec_to_bin(person[0],m), dec_to_bin(person[1],m)
+			infect_iteration (px, py, get_height(px, py))
+		print("--------------------------------------------------------------------------")
+		# print("Infected at time step:", curr_iter-1)
+		# print(infected_history[curr_iter-1])
+		x.append(i)
+		y_total.append(len(total_infected))
+		y_partial.append(len(infected_history[curr_iter-1]))
+		if (curr_iter%vis_steps == 1):
+			print_matrix (g, total_infected, len_side, int(curr_iter/vis_steps))
+			print("Total infected so far:", len(total_infected))
+			print()
+		elif (vis_steps==1): 
+			print_matrix (g, total_infected, len_side, i)
+			print("Total infected so far:", len(total_infected))
+			print()
+		if i>0 and y_total[i]==y_total[i-1]: break
+
+	time_stamp = str(int(datetime.now().timestamp())%100000)
+	plt.savefig("results/sim_for_m_"+ str(m) + "_a_" + str(alpha) + "_p_" + str(p) + "_r_" + str(rho) + "_v_" + time_stamp + ".png", format="png")
 
 
-# Scatterplot with total and new infected
-# f = plt.figure(figsize=(18, 10))
+	# Scatterplot with total and new infected
+	# f = plt.figure(figsize=(18, 10))
 
-plt.clf()
-plt.figure(figsize=(8, 8))
-lines = plt.plot(x, y_total, x, y_partial, marker="o")
-plt.legend(('Total infected', 'Newly infected'), loc='upper right')
-plt.title('Epidemic Spread')
-plt.savefig("results/scatter_for_m_"+ str(m) + "_a_" + str(alpha) + "_p_" + str(p) + "_r_" + str(rho) + "_v_" + time_stamp + ".png", format="png")
+	plt.clf()
+	plt.figure(figsize=(8, 8))
+	lines = plt.plot(x, y_total, x, y_partial, marker="o")
+	plt.legend(('Total infected', 'Newly infected'), loc='upper right')
+	plt.title('Epidemic Spread')
+	plt.savefig("results/scatter_for_m_"+ str(m) + "_a_" + str(alpha) + "_p_" + str(p) + "_r_" + str(rho) + "_v_" + time_stamp + ".png", format="png")
+	plt.clf()
+
+m = 8
+vis_steps = 4
+time_steps = 16
+N = 4**m
+len_side = int(4**(m/2))
+print ("N:", N, "len_side:", len_side)
+
+# for alpha in [1/3, 1/4, 1/5, 1/8, 1/10, 1/12, 1/15, 1/20]:
+# 	for p in [0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.6]:
+# 		for rho in [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.5]:
+for alpha in [1/3, 1/5, 1/8, 1/12, 1/15]:
+	for p in [0.1, 0.20, 0.30, 0.40, 0.50]:
+		for rho in [0.10,0.20, 0.30, 0.40, 0.5]:
+			for j in range(5):
+				print ("Alpha:", alpha, "P:", p, "Rho:", rho)
+				main_loop (alpha, p, rho)
+				plt.close('all')

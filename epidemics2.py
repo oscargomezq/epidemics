@@ -7,7 +7,7 @@ from datetime import datetime
 # level 0 = only the nearest 4 neighbors
 # level 1 = smallest group of 4
 # level m = all the population
-m = 10
+m = 6
 
 # Size of population
 N = 4**m
@@ -17,13 +17,13 @@ len_side = int(4**(m/2))
 print(len_side)
 
 # Probability for geometric distribution
-alpha = 1/5
+alpha = 1/15
 
 # Probability for nearest neighbors (h=0)
-p = 0.5
+p = 0.45
 
 # Decrease modulator for higher levels
-rho = 0.25
+rho = 0.15
 
 # List of sets of infected people (only includes the NEWLY infected people at each stage)
 # Stores tuples of ints, not strings
@@ -144,9 +144,8 @@ def print_matrix (plt_fig, infected_set, side, itr):
 	plt.tight_layout()
 
 
-
 # Main loop
-vis_steps = 2
+vis_steps = 4
 time_steps = 16
 
 # Visualization for the actual spreading
